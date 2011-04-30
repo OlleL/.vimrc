@@ -40,6 +40,10 @@ let mapleader=","
 nmap <silent> <leader>ev :e $MYVIMRC<CR>
 nmap <silent> <leader>sv :so $MYVIMRC<CR>
 
+" Snabbt ändra i perl-snippet
+nmap <silent> <leader>ep :e ~/.vim/bundle/snipMate/snippets/perl.snippets<CR>
+
+
 " Tar bort sökhighlightning..
 nmap <silent> ,/ :nohlsearch<CR>
 " Öppnar en ny vsp och fokuserar på den
