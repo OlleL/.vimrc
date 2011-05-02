@@ -105,8 +105,8 @@ nnoremap <silent> <F9> :TagbarToggle<CR>
 let g:tagbar_autoclose = 0
 
 
-" SYNTAX KOLL
-map <C-K> :call SyntaxCheck()<CR>
+" SYNTAX KOLL (cs = checkSyntax)
+nmap <silent> <leader>cs :call SyntaxCheck()<CR>
 
 function! SyntaxCheck()
         let filename = expand("%")
