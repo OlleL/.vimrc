@@ -1,34 +1,32 @@
-" This must be first, because it changes other options as side effect
-set nocompatible
+if empty(glob('~/.vim/autoload/plug.vim'))
+	silent !curl -fLo ~/.vim/autoload/plug.vim --create-dirs
+		\ https://raw.githubusercontent.com/junegunn/vim-plug/master/plug.vim
+	autocmd VimEnter * PlugInstall --sync | source $MYVIMRC
+endif
 
-filetyp off
-" Use pathogen to easily modify the runtime path to include all
-" plugins under the ~/.vim/bundle directory
-call pathogen#helptags()
-call pathogen#runtime_append_all_bundles()
+call plug#begin()
+
+" Color
+Plug 'tomasr/molokai'
+
+" Edit
+Plug 'fatih/vim-go', { 'do': ':GoInstallBinaries' }
+Plug 'SirVer/ultisnips'
+Plug 'tpope/vim-commentary'
+
+Plug 'junegunn/fzf', { 'dir': '~/.fzf', 'do': './install --all' }
+Plug 'junegunn/fzf.vim'
+
+call plug#end()
 
 set modelines=0
-
-filetype plugin indent on
-colorscheme molokai
-"set list
-"set listchars=extends:#
-
-" Så jag lär mig
-nnoremap <up> <nop>
-nnoremap <down> <nop>
-nnoremap <left> <nop>
-nnoremap <right> <nop>
-inoremap <up> <nop>
-inoremap <down> <nop>
-inoremap <left> <nop>
-inoremap <right> <nop>
-nnoremap j gj
-nnoremap k gk
 
 "------------------------------------------------------------------------
 "  Plugins
 "------------------------------------------------------------------------
+
+" fzf - fuzzy search
+set rtp+=/usr/local/opt/fzf
 
 "-------------------------------------------------------------------------
 "  Mappningar
@@ -40,35 +38,30 @@ let mapleader=","
 nmap <silent> <leader>ev :e $MYVIMRC<CR>
 nmap <silent> <leader>sv :so $MYVIMRC<CR>
 
-" Snabbt ändra i perl-snippet
-nmap <silent> <leader>ep :e ~/.vim/bundle/snipMate/snippets/perl.snippets<CR>
-
-
 " Tar bort sökhighlightning..
 nmap <silent> ,/ :nohlsearch<CR>
-" Öppnar en ny vsp och fokuserar på den
-nnoremap <leader>w <C-w>v<C-w>l
-" tar en snabb tillbaka till normalmode
-inoremap jj <ESC>
-" Rörselser
-nnoremap <C-h> <C-w>h
-nnoremap <C-j> <C-w>j
-nnoremap <C-k> <C-w>k
-nnoremap <C-l> <C-w>l
 
+" fzf
+nmap ; :Buffers<CR>
+nmap <Leader>t :Files<CR>
+nmap <Leader>r :Tags<CR>
 
 "-------------------------------------------------------------------------
 "  Basic settings
 "-------------------------------------------------------------------------
+colorscheme molokai
+set timeoutlen=1000 ttimeoutlen=0
+
 " Enables work with hidden unsaved buffers
 set hidden
 "set nowrap        " don't wrap lines
 set tabstop=4     " a tab is four spaces
 set backspace=indent,eol,start
                   " allow backspacing over everything in insert mode
+set autowrite    " 
 set autoindent    " always set autoindenting on
 set copyindent    " copy the previous indentation on autoindenting
-set number        " always show line numbers
+set number relativenumber " always show line numbers
 set shiftwidth=4  " number of spaces to use for autoindenting
 set shiftround    " use multiple of shiftwidth when indenting with '<' and '>'
 set showmatch     " set show matching parenthesis
@@ -89,36 +82,44 @@ set autochdir
 
 set scrolloff=4
 set wildmenu
-set cursorline
+" set cursorline
+set vb t_vb=
+
+" faster update time for status line
+set updatetime=100
+
+" faster switching between splits
+nnoremap <C-J> <C-W><C-J>
+nnoremap <C-K> <C-W><C-K>
+nnoremap <C-L> <C-W><C-L>
+nnoremap <C-H> <C-W><C-H>
 
 " Searching.. 
 nnoremap / /\v
 vnoremap / /\v
 set gdefault
 
+" Browsing quickfix window
+map <C-n> :cnext<CR>
+map <C-m> :cprevious<CR>
+nnoremap <leader>a :cclose<CR>
 
-" Sparar vid växling till annat program
-" au FocusLost * :wa
+" vim-go
+let g:go_fmt_command = "goimports"
+let g:go_list_type = "quickfix"
+let g:go_auto_type_info = 1
+" let g:go_auto_sameids = 1
 
-" Tagbar
-nnoremap <silent> <F9> :TagbarToggle<CR>
-let g:tagbar_autoclose = 0
-
-
-" SYNTAX KOLL (cs = checkSyntax)
-nmap <silent> <leader>cs :call SyntaxCheck()<CR>
-
-function! SyntaxCheck()
-        let filename = expand("%")
-        let ftype = &filetype
-        if ftype == '' 
-                return
-        elseif ftype == "perl"
-                let cmd = "!clear; echo \"\"; echo \"\"; perl -c " . filename
-                execute cmd
-        else
-                echo "Cant syntax check file type : " . ftype
-                return
-        endif
+function! s:build_go_files()
+	let l:file = expand('%')
+	if l:file =~# '^\f\+_test\.go$'
+		call go#test#Test(0, 1)
+	elseif l:file =~# '^\f\+\.go$'
+		call go#cmd#Build(0)
+	endif
 endfunction
 
+autocmd FileType go nmap <leader>b :<C-u>call <SID>build_go_files()<CR>
+autocmd FileType go nmap <leader>r  <Plug>(go-run)
+autocmd FileType go nmap <leader>t  <Plug>(go-test)
+autocmd FileType go nmap <Leader>c <Plug>(go-coverage-toggle)
